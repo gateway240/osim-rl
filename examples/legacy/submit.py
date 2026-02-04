@@ -1,4 +1,4 @@
-import opensim as osim
+import opynsim as osim
 from osim.http.client import Client
 from osim.env import ProstheticsEnv
 import numpy as np

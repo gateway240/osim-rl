@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-import opensim as osim
+import opynsim as osim
 
 from osim.redis.client import Client
 from osim.env import *

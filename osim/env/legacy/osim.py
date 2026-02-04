@@ -1,9 +1,9 @@
-import opensim
+import opynsim
 import math
 import numpy as np
 import os
 from .utils.mygym import convert_to_gym
-import gym
+import gymnasium as gym
 
 class Osim(object):
     # Initialize simulation

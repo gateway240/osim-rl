@@ -13,7 +13,7 @@ from baselines.ddpg.models import Actor, Critic
 from baselines.ddpg.memory import Memory
 from baselines.ddpg.noise import *
 
-import gym
+import gymnasium as gym
 import tensorflow as tf
 from mpi4py import MPI
 
