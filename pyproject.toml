@@ -1,0 +1,33 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "osim-rl"
+version = "4.0.0"
+description = "OpenSim Reinforcement Learning Framework"
+authors = [
+    { name = "Lukasz Kidzinski", email = "lukasz.kidzinski@stanford.edu" },
+    { name = "Alexander Beattie"}
+]
+readme = "README.md"
+requires-python = ">=3.5"
+license = { text = "Apache-2.0" }
+keywords = ["OpenSim", "Reinforcement Learning", "AI", "Simulation"]
+classifiers = [
+    "Intended Audience :: Science/Research",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+dependencies = [
+    "numpy","gymnasium","matplotlib", "opynsim"
+]
+
+[tool.setuptools.packages.find]
+where = ["."]
+exclude = ["tests*"]
+
+[tool.setuptools.package-data]
+"osim" = ["models/Geometry/*.vtp", "models/*.osim"]
+

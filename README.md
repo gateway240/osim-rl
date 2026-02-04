@@ -1,3 +1,13 @@
+# Opensim-RL
+
+Install uv!
+```bash
+uv venv
+source .venv/bin/activate
+uv pip install -r pyproject.toml
+uv pip install -e .
+```
+
 # NeurIPS 2019: Learn to Move - Walk Around
 
 This repository contains software required for participation in the NeurIPS 2019 Challenge: Learn to Move - Walk Around. See more details about the challenge [here](https://www.aicrowd.com/challenges/neurips-2019-learn-to-move-walk-around). See full documentation of our reinforcement learning environment [here](https://osim-rl.stanford.edu). In this document we will give very basic steps to get you set up for the challenge!
