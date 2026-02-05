@@ -2,7 +2,7 @@ import numpy as np
 import os
 from .utils.mygym import convert_to_gym
 import gymnasium as gym
-import opynsim as opensim
+import pyopensim as opensim
 
 ## OpenSim interface
 # The amin purpose of this class is to provide wrap all 
@@ -58,11 +58,15 @@ class OsimModel(object):
         # we will change levels of constants.
         # One actuartor per each muscle
         for j in range(self.muscleSet.getSize()):
-            func = opensim.Constant(1.0)
-            self.brain.addActuator(self.muscleSet.get(j))
-            self.brain.prescribeControlForActuator(j, func)
+            func = opensim.common.Constant(1.0)
 
-            self.maxforces.append(self.muscleSet.get(j).getMaxIsometricForce())
+            muscle = self.muscleSet.get(j)
+            self.brain.addActuator(self.muscleSet.get(j))
+            
+            actuator_name = muscle.getName()
+            self.brain.prescribeControlForActuator(actuator_name, func)
+
+            self.maxforces.append(muscle.getMaxIsometricForce())
             self.curforces.append(1.0)
 
         self.noutput = self.muscleSet.getSize()
@@ -98,7 +102,7 @@ class OsimModel(object):
         functionSet = brain.get_ControlFunctions()
 
         for j in range(functionSet.getSize()):
-            func = opensim.Constant.safeDownCast(functionSet.get(j))
+            func = opensim.common.Constant.safeDownCast(functionSet.get(j))
             func.setValue( float(action[j]) )
 
     """
@@ -239,7 +243,7 @@ class OsimModel(object):
         self.reset_manager()
 
     def get_state(self):
-        return opensim.State(self.state)
+        return opensim.simbody.State(self.state)
 
     def set_state(self, state):
         self.state = state
@@ -287,7 +291,7 @@ class OsimEnv(gym.Env):
     def is_done(self):
         return False
 
-    def __init__(self, visualize = True, integrator_accuracy = 5e-5):
+    def __init__(self, visualize = False, integrator_accuracy = 5e-5):
         self.visualize = visualize
         self.integrator_accuracy = integrator_accuracy
         self.load_model()
@@ -457,7 +461,7 @@ class L2M2019Env(OsimEnv):
             print("difficulty 3 for Round 2")
         self.spec.timestep_limit = self.time_limit    
 
-    def __init__(self, visualize=True, integrator_accuracy=5e-5, difficulty=3, seed=None, report=None):
+    def __init__(self, visualize=False, integrator_accuracy=5e-5, difficulty=3, seed=None, report=None):
         if difficulty not in [0, 1, 2, 3]:
             raise ValueError("difficulty level should be in [0, 1, 2, 3].")
         self.model_paths = {}

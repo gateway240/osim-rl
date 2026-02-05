@@ -3,7 +3,7 @@ import numpy as np
 import os
 from .utils.mygym import convert_to_gym
 import gymnasium as gym
-import opynsim
+import pyopensim as opensim
 import random
 from .osim import OsimEnv
 

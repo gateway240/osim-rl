@@ -5,7 +5,7 @@
 
 from __future__ import division # '/' always means non-truncating division
 import numpy as np
-from scipy import interpolate 
+from scipy.interpolate import RegularGridInterpolator
 
 
 class VTgtField(object):
@@ -91,7 +91,7 @@ class VTgtField(object):
         self.pose_agent = pose_agent
         self.rng_xy = (self.pose_agent[0:2] + self.rng_xy0.T).T
 
-        if self.ver['version'] is 0:
+        if self.ver['version'] == 0:
             # map coordinate and vtgt
             self.vtgt_obj = VTgtConst(v_tgt=self.ver['ver00']['v_amp'],
                 rng_xy=self.rng_xy, res_map=self.res_map,
@@ -262,8 +262,9 @@ class VTgt0(object):
 
 # -----------------------------------------------------------------------------------------------------------------
     def get_vtgt(self, xy): # in the global frame
-        vtgt_x = self.vtgt_interp_x(xy[0], xy[1])
-        vtgt_y = self.vtgt_interp_y(xy[0], xy[1])
+        point = np.array([[xy[0], xy[1]]])  # shape (1,2)
+        vtgt_x = self.vtgt_interp_x(point)[0]
+        vtgt_y = self.vtgt_interp_y(point)[0]
         return np.array([vtgt_x, vtgt_y])
 
 # -----------------------------------------------------------------------------------------------------------------
@@ -277,12 +278,10 @@ class VTgt0(object):
         get_map_y = np.sin(th)*get_map0[0,:,:] + np.cos(th)*get_map0[1,:,:] + xy[1]
 
         # get vtgt
-        vtgt_x0 = np.reshape(np.array([self.vtgt_interp_x(x, y) \
-                            for x, y in zip(get_map_x.flatten(), get_map_y.flatten())]),
-                            get_map_x.shape)
-        vtgt_y0 = np.reshape(np.array([self.vtgt_interp_y(x, y) \
-                            for x, y in zip(get_map_x.flatten(), get_map_y.flatten())]),
-                            get_map_y.shape)
+        points = np.stack([get_map_x.flatten(), get_map_y.flatten()], axis=-1)  # shape (N,2)
+        vtgt_x0 = self.vtgt_interp_x(points).reshape(get_map_x.shape)
+        vtgt_y0 = self.vtgt_interp_y(points).reshape(get_map_y.shape)
+
 
         vtgt_x = np.cos(-th)*vtgt_x0 - np.sin(-th)*vtgt_y0
         vtgt_y = np.sin(-th)*vtgt_x0 + np.cos(-th)*vtgt_y0
@@ -325,29 +324,33 @@ class VTgtSink(VTgt0):
         # set vtgt amplitudes
         self._set_sink_vtgt_amp(p_sink, d_sink, v_amp_rng, v_phase0)
 
-        self.vtgt_interp_x = interpolate.interp2d(self.map[0,:,0], self.map[1,0,:], self.vtgt[0].T, kind='linear')
-        self.vtgt_interp_y = interpolate.interp2d(self.map[0,:,0], self.map[1,0,:], self.vtgt[1].T, kind='linear')
+        x = self.map[0, :, 0]
+        y = self.map[1, 0, :]
+
+        self.vtgt_interp_x = RegularGridInterpolator((x, y), self.vtgt[0].T)
+        self.vtgt_interp_y = RegularGridInterpolator((x, y), self.vtgt[1].T)
 
 # -----------------------------------------------------------------------------------------------------------------
-    def _set_sink_vtgt_amp(self, p_sink, d_sink, v_amp_rng, v_phase0, d_dec = 1):
+    def _set_sink_vtgt_amp(self, p_sink, d_sink, v_amp_rng, v_phase0, d_dec=1):
         # d_dec: start to decelerate within d_dec of sink
-
-        for i_x, x in enumerate(self.map[0,:,0]):
-            for i_y, y in enumerate(self.map[1,0,:]):
-                d = np.linalg.norm([ x-p_sink[0], y-p_sink[1] ])
+        for i_x, x in enumerate(self.map[0, :, 0]):
+            for i_y, y in enumerate(self.map[1, 0, :]):
+                d = np.linalg.norm([x - p_sink[0], y - p_sink[1]])
                 if d > d_sink + d_dec:
                     v_amp = v_amp_rng[1]
                 elif d > d_dec:
-                    v_phase = v_phase0 + d/d_sink*2*np.pi
-                    v_amp = .5*np.diff(v_amp_rng)*np.sin(v_phase) + np.mean(v_amp_rng)
+                    v_phase = v_phase0 + d / d_sink * 2 * np.pi
+                    v_amp = 0.5 * np.diff(v_amp_rng) * np.sin(v_phase) + np.mean(v_amp_rng)
                 else:
-                    v_phase = v_phase0 + d_dec/d_sink*2*np.pi
-                    v_amp0 = .5*np.diff(v_amp_rng)*np.sin(v_phase) + np.mean(v_amp_rng)
-                    v_amp = d*v_amp0
+                    v_phase = v_phase0 + d_dec / d_sink * 2 * np.pi
+                    v_amp0 = 0.5 * np.diff(v_amp_rng) * np.sin(v_phase) + np.mean(v_amp_rng)
+                    v_amp = d * v_amp0
 
-                amp_norm = np.linalg.norm(self.vtgt[:,i_x,i_y])
-                self.vtgt[0,i_x,i_y] = v_amp*self.vtgt[0,i_x,i_y]/amp_norm
-                self.vtgt[1,i_x,i_y] = v_amp*self.vtgt[1,i_x,i_y]/amp_norm
+                amp_norm = np.linalg.norm(self.vtgt[:, i_x, i_y])
+                if amp_norm > 0:
+                    self.vtgt[:, i_x, i_y] = v_amp * self.vtgt[:, i_x, i_y] / amp_norm
+                else:
+                    self.vtgt[:, i_x, i_y] = 0
 
 
 class VTgtConst(VTgt0):
@@ -365,7 +368,9 @@ class VTgtConst(VTgt0):
     def create_vtgt_const(self, v_tgt):
         self.vtgt[0].fill(v_tgt[0])
         self.vtgt[1].fill(v_tgt[1])        
+        x = self.map[0, :, 0]
+        y = self.map[1, 0, :]
 
-        self.vtgt_interp_x = interpolate.interp2d(self.map[0,:,0], self.map[1,0,:], self.vtgt[0].T, kind='linear')
-        self.vtgt_interp_y = interpolate.interp2d(self.map[0,:,0], self.map[1,0,:], self.vtgt[1].T, kind='linear')
+        self.vtgt_interp_x = RegularGridInterpolator((x, y), self.vtgt[0].T)
+        self.vtgt_interp_y = RegularGridInterpolator((x, y), self.vtgt[1].T)
 

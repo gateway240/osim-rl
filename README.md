@@ -4,6 +4,8 @@ Install uv!
 ```bash
 uv venv
 source .venv/bin/activate
+# Install the locally build pyopensim wheel
+uv pip install ../pyopensim/dist/pyopensim-4.5.2.0-cp314-cp314-linux_x86_64.whl
 uv pip install -r pyproject.toml
 uv pip install -e .
 ```
