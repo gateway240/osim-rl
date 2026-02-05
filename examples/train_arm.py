@@ -1,5 +1,5 @@
 # Derived from keras-rl
- import pyopensim as opensim
+import opensim
 import numpy as np
 import sys
 

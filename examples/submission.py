@@ -1,4 +1,4 @@
- import pyopensim as opensim
+import opensim
 from osim.http.client import Client
 import numpy as np
 

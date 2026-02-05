@@ -1,4 +1,4 @@
-import pyopensim as opensim
+import opensim
 import math
 import numpy as np
 import os

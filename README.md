@@ -4,10 +4,16 @@ Install uv!
 ```bash
 uv venv
 source .venv/bin/activate
-# Install the locally build pyopensim wheel
-uv pip install ../pyopensim/dist/pyopensim-4.5.2.0-cp314-cp314-linux_x86_64.whl
+# Install the locally built opensim python wheel
+# Build wheel if necessary from install dir
+(cd ~/opensim-core/sdk/Python && python3 -m build --wheel)
+uv pip install ~/opensim-core/sdk/Python/dist/opensim-4.5.2-cp314-cp314-linux_x86_64.whl
 uv pip install -r pyproject.toml
 uv pip install -e .
+```
+To make the simbody visualizer work add to the shell env (e.g. `.bashrc`):
+```bash
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:~/opensim-core/sdk/Simbody/lib
 ```
 
 # NeurIPS 2019: Learn to Move - Walk Around

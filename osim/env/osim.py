@@ -2,7 +2,7 @@ import numpy as np
 import os
 from .utils.mygym import convert_to_gym
 import gymnasium as gym
-import pyopensim as opensim
+import opensim
 
 ## OpenSim interface
 # The amin purpose of this class is to provide wrap all 
