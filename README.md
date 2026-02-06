@@ -9,13 +9,16 @@ source .venv/bin/activate
 (cd ~/opensim-core/sdk/Python && python3 -m build --wheel)
 uv pip install ~/opensim-core/sdk/Python/dist/opensim-4.5.2-cp314-cp314-linux_x86_64.whl
 uv pip install -r pyproject.toml
-uv pip install -e .
+uv pip install -e .[dev]
 ```
 To make the simbody visualizer work add to the shell env (e.g. `.bashrc`):
 ```bash
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:~/opensim-core/sdk/Simbody/lib
 ```
-
+Run tests:
+```bash
+python -m pytest -n 8 --maxfail=1
+```
 # NeurIPS 2019: Learn to Move - Walk Around
 
 This repository contains software required for participation in the NeurIPS 2019 Challenge: Learn to Move - Walk Around. See more details about the challenge [here](https://www.aicrowd.com/challenges/neurips-2019-learn-to-move-walk-around). See full documentation of our reinforcement learning environment [here](https://osim-rl.stanford.edu). In this document we will give very basic steps to get you set up for the challenge!

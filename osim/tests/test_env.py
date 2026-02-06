@@ -9,7 +9,7 @@ class SimulationTest(unittest.TestCase):
             observation = env.reset()
 
         action = env.action_space.sample()
-        action[5] = np.NaN
+        action[5] = np.nan
         self.assertRaises(ValueError, env.step, action)
 
     def test_actions(self):

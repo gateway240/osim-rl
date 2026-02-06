@@ -1,11 +1,10 @@
 from osim.env import ProstheticsEnv
-import numpy as np
 import unittest
 
 class SimulationTest(unittest.TestCase):
     def test1(self):
         
-        env = ProstheticsEnv(visualize=True)
+        env = ProstheticsEnv(visualize=False)
         observation = env.reset()
 
         simbody_state = env.osim_model.get_state()
