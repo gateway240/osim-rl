@@ -4,6 +4,7 @@ Install uv!
 ```bash
 uv venv
 source .venv/bin/activate
+export LD_LIBRARY_PATH=$VIRTUAL_ENV/lib:$VIRTUAL_ENV/lib/$(python -c 'import sys;print(f"python{sys.version_info.major}.{sys.version_info.minor}")')/site-packages/opensim:$LD_LIBRARY_PATH
 # Install the locally built opensim python wheel
 # Build wheel if necessary from install dir
 (cd ~/opensim-core/sdk/Python && python3 -m build --wheel)
