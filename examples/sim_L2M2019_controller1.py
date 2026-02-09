@@ -25,14 +25,14 @@ INIT_POSE = np.array([
     -8.041966456860847323e-01, # knee extend
     -1.745329251994329478e-01]) # ankle flex
 
-if mode is '2D':
+if mode == '2D' or mode == '2D_PROS':
     params = np.loadtxt('./osim/control/params_2D.txt')
-elif mode is '3D':
+elif mode == '3D':
     params = np.loadtxt('./osim/control/params_3D_init.txt')
 
 locoCtrl = OsimReflexCtrl(mode=mode, dt=sim_dt)
 env = L2M2019Env(visualize=visualize, seed=seed, difficulty=difficulty)
-env.change_model(model=mode, difficulty=difficulty, seed=seed)
+env.change_model(model='2D_PROS', difficulty=difficulty, seed=seed)
 obs_dict = env.reset(project=True, seed=seed, obs_as_dict=True, init_pose=INIT_POSE)
 env.spec.timestep_limit = timstep_limit
 

@@ -91,8 +91,9 @@ class OsimReflexCtrl(object):
 
             sensor_data[s_leg]['F_RF'] = obs_dict[s_leg]['RF']['f']
             sensor_data[s_leg]['F_VAS'] = obs_dict[s_leg]['VAS']['f']
-            sensor_data[s_leg]['F_GAS'] = obs_dict[s_leg]['GAS']['f']
-            sensor_data[s_leg]['F_SOL'] = obs_dict[s_leg]['SOL']['f']
+            if s_leg == 'l_leg':
+                sensor_data[s_leg]['F_GAS'] = obs_dict[s_leg]['GAS']['f']
+                sensor_data[s_leg]['F_SOL'] = obs_dict[s_leg]['SOL']['f']
 
         return sensor_data
 

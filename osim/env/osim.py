@@ -469,6 +469,7 @@ class L2M2019Env(OsimEnv):
         self.model_paths = {}
         self.model_paths['3D'] = os.path.join(os.path.dirname(__file__), '../models/gait14dof22musc_20170320.osim')
         self.model_paths['2D'] = os.path.join(os.path.dirname(__file__), '../models/gait14dof22musc_planar_20170320.osim')
+        self.model_paths['2D_PROS'] = os.path.join(os.path.dirname(__file__), '../models/gait14dof22musc_planar_pros_20180507.osim')
         self.model_path = self.model_paths[self.get_model_key()]
         super(L2M2019Env, self).__init__(visualize=visualize, integrator_accuracy=integrator_accuracy)
 
@@ -633,9 +634,14 @@ class L2M2019Env(OsimEnv):
         # leg state
         for leg, side in zip(['r_leg', 'l_leg'], ['r', 'l']):
             obs_dict[leg] = {}
-            grf = [ f/(self.MASS*self.G) for f in state_desc['forces']['foot_{}'.format(side)][0:3] ] # forces normalized by bodyweight
-            grm = [ m/(self.MASS*self.G) for m in state_desc['forces']['foot_{}'.format(side)][3:6] ] # forces normalized by bodyweight
-            grfx_local, grfy_local = rotate_frame(-grf[0], -grf[2], yaw)
+            if side == 'l':
+                grf = [ f/(self.MASS*self.G) for f in state_desc['forces']['foot_{}'.format(side)][0:3] ] # forces normalized by bodyweight
+                grm = [ m/(self.MASS*self.G) for m in state_desc['forces']['foot_{}'.format(side)][3:6] ] # forces normalized by bodyweight
+                grfx_local, grfy_local = rotate_frame(-grf[0], -grf[2], yaw)
+            else:
+                grf = [ f/(self.MASS*self.G) for f in state_desc['forces']['pros_foot_{}'.format(side)][0:3] ] # forces normalized by bodyweight
+                grm = [ m/(self.MASS*self.G) for m in state_desc['forces']['pros_foot_{}'.format(side)][3:6] ] # forces normalized by bodyweight
+                grfx_local, grfy_local = rotate_frame(-grf[0], -grf[2], yaw)
             if leg == 'r_leg':
                 obs_dict[leg]['ground_reaction_forces'] = [ grfx_local, # (+) forward
                                                             grfy_local, # (+) lateral (rightward)
@@ -662,6 +668,10 @@ class L2M2019Env(OsimEnv):
             for MUS, mus in zip(    ['HAB', 'HAD', 'HFL', 'GLU', 'HAM', 'RF', 'VAS', 'BFSH', 'GAS', 'SOL', 'TA'],
                                     ['abd', 'add', 'iliopsoas', 'glut_max', 'hamstrings', 'rect_fem', 'vasti', 'bifemsh', 'gastroc', 'soleus', 'tib_ant']):
                 obs_dict[leg][MUS] = {}
+                print(leg,MUS,mus)
+                if leg == 'r_leg' and (mus == 'gastroc' or mus == 'soleus' or mus == 'tib_ant'):
+                    print(MUS,leg)
+                    continue
                 obs_dict[leg][MUS]['f'] = state_desc['muscles']['{}_{}'.format(mus,side)]['fiber_force']/self.Fmax[leg][MUS]
                 obs_dict[leg][MUS]['l'] = state_desc['muscles']['{}_{}'.format(mus,side)]['fiber_length']/self.lopt[leg][MUS]
                 obs_dict[leg][MUS]['v'] = state_desc['muscles']['{}_{}'.format(mus,side)]['fiber_velocity']/self.lopt[leg][MUS]
@@ -1030,7 +1040,7 @@ class ProstheticsEnv(OsimEnv):
 
     def generate_new_targets(self, poisson_lambda = 300):
         nsteps = self.time_limit + 1
-        rg = np.array(range(nsteps))
+        # rg = np.array(range(nsteps))
         velocity = np.zeros(nsteps)
         heading = np.zeros(nsteps)
 
@@ -1056,9 +1066,9 @@ class ProstheticsEnv(OsimEnv):
             d["target_vel"] = self.targets[self.osim_model.istep,:].tolist()
         return d
 
-    def reset(self, project = True):
+    def reset(self, project=True, seed=None, init_pose=None, obs_as_dict=True):
         self.generate_new_targets()
-        return super(ProstheticsEnv, self).reset(project = project)
+        return super(ProstheticsEnv, self).reset(project = project, seed = seed, init_pose = init_pose, obs_as_dict=obs_as_dict)
 
     def reward_round1(self):
         state_desc = self.get_state_desc()
