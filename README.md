@@ -1,13 +1,17 @@
 # Opensim-RL
 
+Build opensim wheel (if necessary) from outside the venv
+```bash
+# Build wheel if necessary from install dir
+(cd ~/opensim-core/sdk/Python && python3 -m build --wheel)
+```
+
 Install uv!
 ```bash
 uv venv
 source .venv/bin/activate
 export LD_LIBRARY_PATH=$VIRTUAL_ENV/lib:$VIRTUAL_ENV/lib/$(python -c 'import sys;print(f"python{sys.version_info.major}.{sys.version_info.minor}")')/site-packages/opensim:$LD_LIBRARY_PATH
-# Install the locally built opensim python wheel
-# Build wheel if necessary from install dir
-(cd ~/opensim-core/sdk/Python && python3 -m build --wheel)
+# Install opensim wheel
 uv pip install ~/opensim-core/sdk/Python/dist/opensim-4.5.2-cp314-cp314-linux_x86_64.whl
 uv pip install -r pyproject.toml
 uv pip install -e .[dev]
